@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cedric's Dev Playground</title>
     <style>
-        /* CSS Variables for Theming */
+        /* ========================================
+           1. CSS Variables & Theme Logic (Fixed)
+           ======================================== */
         :root {
+            /* Light Theme as Default */
             --bg-color: #ffffff;
             --text-color: #333333;
             --accent-color: #0366d6;
@@ -16,8 +19,9 @@
             --meta-bg: #ddf4ff;
         }
 
+        /* System Dark Mode: Only applies when no explicit theme is set */
         @media (prefers-color-scheme: dark) {
-            :root {
+            :root:not([data-theme="light"]) {
                 --bg-color: #0d1117;
                 --text-color: #c9d1d9;
                 --accent-color: #58a6ff;
@@ -28,6 +32,18 @@
             }
         }
 
+        /* Forced Dark Mode */
+        [data-theme="dark"] {
+            --bg-color: #0d1117;
+            --text-color: #c9d1d9;
+            --accent-color: #58a6ff;
+            --border-color: #30363d;
+            --card-bg: #161b22;
+            --meta-color: #8b949e;
+            --meta-bg: #388bfd26;
+        }
+        
+        /* Forced Light Mode (Ensures system dark mode is overridden) */
         [data-theme="light"] {
             --bg-color: #ffffff;
             --text-color: #333333;
@@ -38,17 +54,9 @@
             --meta-bg: #ddf4ff;
         }
 
-        [data-theme="dark"] {
-            --bg-color: #0d1117;
-            --text-color: #c9d1d9;
-            --accent-color: #58a6ff;
-            --border-color: #30363d;
-            --card-bg: #161b22;
-            --meta-color: #8b949e;
-            --meta-bg: #388bfd26;
-        }
-
-        /* Base Styles */
+        /* ========================================
+           2. Base & Layout Styles
+           ======================================== */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -60,13 +68,13 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.5;
-            transition: background-color 0.2s ease, color 0.2s ease;
+            transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
-        /* Header Section */
+        /* Header */
         header {
             display: flex;
             justify-content: space-between;
@@ -88,6 +96,7 @@
             cursor: pointer;
             padding: 4px;
             transition: transform 0.2s;
+            line-height: 1;
         }
 
         #theme-toggle:hover {
@@ -103,7 +112,7 @@
             flex: 1;
         }
 
-        /* Project List Styles (Dense Layout - 2 Columns) */
+        /* Project List (Double Column) */
         .project-list {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -115,11 +124,14 @@
             border-radius: 6px;
             padding: 16px;
             background-color: var(--card-bg);
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
         }
 
         .project-item:hover {
             border-color: var(--accent-color);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
         }
 
         .project-header {
@@ -127,7 +139,6 @@
             justify-content: space-between;
             align-items: baseline;
             margin-bottom: 8px;
-            flex-wrap: wrap;
             gap: 8px;
         }
 
@@ -147,6 +158,7 @@
             gap: 8px;
             font-size: 0.75rem;
             color: var(--meta-color);
+            flex-shrink: 0;
         }
 
         .tag {
@@ -160,7 +172,6 @@
         .project-desc {
             font-size: 0.9rem;
             color: var(--text-color);
-            margin-bottom: 0;
         }
 
         /* Footer */
@@ -173,11 +184,13 @@
             margin-top: auto;
         }
 
+        /* 3. Footer Link: No link style */
         footer a {
-            color: var(--accent-color);
+            color: inherit;
             text-decoration: none;
         }
-
+        
+        /* Optional: subtle hint on hover for footer link */
         footer a:hover {
             text-decoration: underline;
         }
@@ -194,10 +207,9 @@
             <!-- CANcraft -->
             <div class="project-item">
                 <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/CANcraft" class="project-title">CANcraft</a>
+                    <a href="https://cedricwangrs.github.io/CANcraft" class="project-title" target="_blank" rel="noopener noreferrer">CANcraft</a>
                     <div class="project-meta">
                         <span class="tag">Public</span>
-                        <span>Updated 2 days ago</span>
                     </div>
                 </div>
                 <p class="project-desc">CAN Signal Studio > Encode, decode, and visualize CAN signals in your browser. Bit-level visualization, byte order.</p>
@@ -206,65 +218,65 @@
             <!-- DTC-Lab -->
             <div class="project-item">
                 <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/DTC-Lab" class="project-title">DTC-Lab</a>
+                    <a href="https://cedricwangrs.github.io/DTC-Lab" class="project-title" target="_blank" rel="noopener noreferrer">DTC-Lab</a>
                     <div class="project-meta">
                         <span class="tag">Public</span>
-                        <span>Updated 2 days ago</span>
                     </div>
                 </div>
-                <p class="project-desc">DTC Lab — Diagnostic Trouble Code Studio. Decode DTC codes, visualize status bytes, and reference UDS services — all in your browser. Interactive bit-level status byte visualizer.</p>
+                <p class="project-desc">DTC Lab — Diagnostic Trouble Code Studio. Decode DTC codes, visualize status bytes, and reference UDS services — all in your browser.</p>
             </div>
 
             <!-- OSviz -->
             <div class="project-item">
                 <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/OSviz" class="project-title">OSviz</a>
+                    <a href="https://cedricwangrs.github.io/OSviz" class="project-title" target="_blank" rel="noopener noreferrer">OSviz</a>
                     <div class="project-meta">
                         <span class="tag">Public</span>
-                        <span>Updated 2 days ago</span>
                     </div>
                 </div>
-                <p class="project-desc">Simulate and visualize AUTOSAR OS task scheduling with interactive Gantt charts. Fixed-priority preemptive scheduling, response time analysis, deadline verification.</p>
+                <p class="project-desc">Simulate and visualize AUTOSAR OS task scheduling with interactive Gantt charts. Fixed-priority preemptive scheduling.</p>
             </div>
 
             <!-- devkit -->
             <div class="project-item">
                 <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/devkit" class="project-title">devkit</a>
+                    <a href="https://cedricwangrs.github.io/devkit" class="project-title" target="_blank" rel="noopener noreferrer">devkit</a>
                     <div class="project-meta">
                         <span class="tag">Public</span>
-                        <span>Updated 2 days ago</span>
                     </div>
                 </div>
-                <p class="project-desc">There are already many developer tool collections on GitHub. They all do one thing: pile tools together. DevKit is different. It introduces two mechanisms you won't find elsewhere: Smart Detect...</p>
+                <p class="project-desc">A developer tool collection that introduces mechanisms you won't find elsewhere: Smart Detect and smart context-aware tool selection.</p>
             </div>
 
             <!-- autosar-lab -->
             <div class="project-item">
                 <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/autosar-lab/" class="project-title">autosar-lab</a>
+                    <a href="https://cedricwangrs.github.io/autosar-lab/" class="project-title" target="_blank" rel="noopener noreferrer">autosar-lab</a>
                     <div class="project-meta">
                         <span class="tag">Public</span>
-                        <span>Updated 2 weeks ago</span>
                     </div>
                 </div>
-                <p class="project-desc">Interactive AUTOSAR learning and simulation platform — lower the steep learning curve with visualizations. AUTOSAR Lab is a pure front-end interactive learning platform that helps newcomers quickly...</p>
+                <p class="project-desc">Interactive AUTOSAR learning and simulation platform. Helps newcomers quickly understand AUTOSAR concepts through visualization.</p>
             </div>
         </div>
     </main>
 
     <footer>
-        © Cedric.Wang <a href="https://cedric.wang" target="_blank">https://cedric.wang</a>
+        <!-- 4. Footer link plain text style, opens in new window -->
+        © Cedric.Wang <a href="https://cedric.wang" target="_blank" rel="noopener noreferrer">https://cedric.wang</a>
     </footer>
 
     <script>
-        // Theme Switching Logic - Fixed Version
+        // Theme Logic
+        function getTheme() {
+            return localStorage.getItem('theme') || 'system';
+        }
+
         function applyTheme(theme) {
             const root = document.documentElement;
             
             if (theme === 'system') {
                 root.removeAttribute('data-theme');
-                // Let CSS @media (prefers-color-scheme) handle it
             } else {
                 root.setAttribute('data-theme', theme);
             }
@@ -274,49 +286,42 @@
         }
 
         function toggleTheme() {
-            const currentTheme = localStorage.getItem('theme') || 'system';
-            let newTheme;
+            const current = getTheme();
+            let next;
             
-            if (currentTheme === 'system') {
-                newTheme = 'light';
-            } else if (currentTheme === 'light') {
-                newTheme = 'dark';
-            } else {
-                newTheme = 'system';
-            }
-            
-            applyTheme(newTheme);
+            if (current === 'system') next = 'light';
+            else if (current === 'light') next = 'dark';
+            else next = 'system';
+
+            applyTheme(next);
         }
 
         function updateButtonIcon(theme) {
             const btn = document.getElementById('theme-toggle');
+            let icon;
             
             if (theme === 'light') {
-                btn.textContent = '☀️';
-                btn.setAttribute('aria-label', 'Light mode');
+                icon = '☀️';
             } else if (theme === 'dark') {
-                btn.textContent = '🌙';
-                btn.setAttribute('aria-label', 'Dark mode');
+                icon = '🌙';
             } else {
-                // System default
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                btn.textContent = prefersDark ? '🌙' : '☀️';
-                btn.setAttribute('aria-label', 'System default');
+                // System: Show icon based on current system preference
+                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                icon = isDark ? '🌙' : '☀️';
             }
+            
+            btn.textContent = icon;
         }
 
-        // Initialize on load
-            const savedTheme = localStorage.getItem('theme') || 'system';
-            applyTheme(savedTheme);
-            
-            // Listen for system theme changes
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-                const currentTheme = localStorage.getItem('theme') || 'system';
-                if (currentTheme === 'system') {
-                    updateButtonIcon('system');
-                }
-            });
-        })();
+        // Initialize
+        applyTheme(getTheme());
+
+        // Listen for system preference changes (optional but good for UX)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (getTheme() === 'system') {
+                updateButtonIcon('system');
+            }
+        });
     </script>
 </body>
 </html>
