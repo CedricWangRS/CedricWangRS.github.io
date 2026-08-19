@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUTOSAR BSW Stack — Tool Coverage Map | Cedric.Wang</title>
+  <meta name="description" content="Open-source interactive tools for AUTOSAR BSW development — 12 tools covering the full BSW stack, from OS scheduling to diagnostic communication.">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0f1e; --bg-card:#111827; --bg-elevated:#1e293b;
+      --text:#f1f5f9; --text-secondary:#cbd5e1; --text-muted:#94a3b8;
+      --border:#1e293b; --border-hover:#334155;
+      --brand:#6366f1; --brand-light:rgba(99,102,241,0.12);
+      --accent:#06b6d4; --accent-light:rgba(6,182,212,0.1);
+      --success:#16a34a; --warning:#f59e0b; --error:#dc2626;
+      --radius:8px; --radius-lg:14px;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      --font-mono:'SF Mono','Cascadia Code','Fira Code',Consolas,monospace;
+    }
+    [data-theme="light"]{
+      --bg:#f8fafc; --bg-card:#ffffff; --bg-elevated:#f1f5f9;
+      --text:#0f172a; --text-secondary:#475569; --text-muted:#94a3b8;
+      --border:#e2e8f0; --border-hover:#cbd5e1;
+    }
+    body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+    .container{max-width:1100px;margin:0 auto;padding:0 24px}
+    .hero{padding:80px 0 60px;text-align:center;background:linear-gradient(180deg,rgba(99,102,241,0.08) 0%,transparent 100%);border-bottom:1px solid var(--border)}
+    .hero h1{font-size:36px;font-weight:800;margin-bottom:12px;letter-spacing:-0.5px}
+    .hero h1 .accent{background:linear-gradient(135deg,var(--brand),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero p{font-size:16px;color:var(--text-secondary);max-width:600px;margin:0 auto 24px}
+    .hero-badges{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:500;border:1px solid var(--border);background:var(--bg-card)}
+    .badge-brand{color:var(--brand);border-color:var(--brand)}
+    .badge-green{color:var(--success);border-color:var(--success)}
+    section{padding:60px 0}
+    section h2{font-size:24px;font-weight:700;margin-bottom:8px}
+    section .subtitle{color:var(--text-muted);font-size:14px;margin-bottom:32px}
+    .intro p{font-size:15px;color:var(--text-secondary);margin-bottom:16px}
+    .intro strong{color:var(--text)}
+    .stack-diagram{display:flex;flex-direction:column;gap:3px;margin:32px 0}
+    .stack-layer{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);transition:all 200ms}
+    .stack-layer:hover{border-color:var(--border-hover)}
+    .layer-label{font-weight:600;font-size:14px;color:var(--text)}
+    .layer-modules{display:flex;gap:6px;flex-wrap:wrap}
+    .module-chip{padding:4px 10px;border-radius:6px;font-size:12px;font-weight:500;border:1px solid;cursor:pointer;transition:all 200ms;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+    .module-chip:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+    .module-chip .icon{font-size:14px}
+    .cat-sys{color:#8b5cf6;border-color:#8b5cf6;background:rgba(139,92,246,0.08)}
+    .cat-mem{color:#06b6d4;border-color:#06b6d4;background:rgba(6,182,212,0.08)}
+    .cat-com{color:#3b82f6;border-color:#3b82f6;background:rgba(59,130,246,0.08)}
+    .cat-diag{color:#e11d48;border-color:#e11d48;background:rgba(225,29,72,0.08)}
+    .cat-sec{color:#f59e0b;border-color:#f59e0b;background:rgba(245,158,11,0.08)}
+    .tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin:32px 0}
+    .tool-card{padding:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);transition:all 200ms;text-decoration:none;display:flex;flex-direction:column;gap:8px}
+    .tool-card:hover{border-color:var(--brand);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.2)}
+    .tool-header{display:flex;align-items:center;gap:10px}
+    .tool-icon{font-size:28px}
+    .tool-name{font-size:16px;font-weight:700;color:var(--text)}
+    .tool-version{font-size:11px;color:var(--text-muted);font-weight:400}
+    .tool-desc{font-size:13px;color:var(--text-secondary);line-height:1.5}
+    .tool-footer{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+    .tool-tag{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;background:var(--bg-elevated);color:var(--text-muted)}
+    .tool-arrow{margin-top:8px;font-size:12px;color:var(--brand);font-weight:500}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin:32px 0}
+    .stat-card{padding:24px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center}
+    .stat-value{font-size:32px;font-weight:800;color:var(--brand)}
+    .stat-label{font-size:13px;color:var(--text-muted);margin-top:4px}
+    .philosophy{padding:48px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);margin:32px 0}
+    .philosophy h3{font-size:18px;font-weight:700;margin-bottom:16px}
+    .philosophy p{font-size:14px;color:var(--text-secondary);margin-bottom:12px}
+    .philosophy ul{list-style:none;padding:0}
+    .philosophy li{padding:6px 0;font-size:14px;color:var(--text-secondary);padding-left:24px;position:relative}
+    .philosophy li::before{content:'\2192';position:absolute;left:0;color:var(--brand)}
+    footer{padding:40px 0;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:13px}
+    footer a{color:var(--brand);text-decoration:none}
+    footer a:hover{text-decoration:underline}
+    .theme-toggle{position:fixed;top:20px;right:20px;z-index:100;width:40px;height:40px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 200ms}
+    .theme-toggle:hover{border-color:var(--brand)}
+    code{font-family:var(--font-mono);font-size:12px;background:var(--bg-elevated);padding:2px 6px;border-radius:4px}
+    @media(max-width:768px){
+      .hero h1{font-size:26px}
+      .hero p{font-size:14px}
+      .stack-layer{grid-template-columns:1fr;gap:8px}
+      .layer-label{font-size:13px}
+      .tool-grid{grid-template-columns:1fr}
+      .stats-grid{grid-template-columns:1fr 1fr}
+      section{padding:40px 0}
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">\u{1F319}</button>
+  <div class="hero">
+    <div class="container">
+      <h1>AUTOSAR BSW Stack <span class="accent">Tool Coverage Map</span></h1>
+      <p>Open-source, zero-dependency interactive tools for AUTOSAR BSW developers. From OS scheduling to diagnostic communication — 12 tools covering the full stack.</p>
+      <div class="hero-badges">
+        <span class="badge badge-brand">12 Tools</span>
+        <span class="badge badge-green">MIT Licensed</span>
+        <span class="badge">Zero Dependencies</span>
+        <span class="badge">Works Offline</span>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <h2>Why These Tools Exist</h2>
+      <p class="subtitle">The gap between specification and understanding</p>
+      <div class="intro">
+        <p>AUTOSAR is powerful but notoriously hard to learn. The specifications span thousands of pages. Configuration tools cost tens of thousands of dollars per seat. And engineers are expected to <strong>understand bit-level signal encoding, state machines, timing constraints, and protocol details</strong> — often with nothing but PDFs and spreadsheets.</p>
+        <p>These tools exist to bridge that gap. Each one takes a specific BSW module and makes it <strong>visible, interactive, and testable</strong> — right in the browser, no installation, no license fees, no dependencies. Whether you're a student learning AUTOSAR for the first time, or a senior engineer debugging a tricky signal routing issue, these tools give you immediate clarity.</p>
+        <p>Everything is open-source under MIT license. No tracking, no analytics, no data collection. Just tools that work.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2>BSW Stack Coverage</h2>
+      <p class="subtitle">Click any module to open the corresponding tool in a new tab</p>
+      <div class="stack-diagram" id="stackDiagram"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2>All Tools</h2>
+      <p class="subtitle">12 open-source tools — click to launch</p>
+      <div class="tool-grid" id="toolGrid"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2>By the Numbers</h2>
+      <p class="subtitle">What this toolkit delivers</p>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="philosophy">
+        <h3>Open Source, Built with Care</h3>
+        <p>These tools are built following a simple philosophy:</p>
+        <ul>
+          <li><strong>Zero dependencies</strong> — pure HTML/CSS/JS, works via <code>file://</code> protocol, no build step, no npm install</li>
+          <li><strong>Interactive by design</strong> — not documentation you read, but tools you use. Click, type, simulate, verify.</li>
+          <li><strong>Standards-accurate</strong> — CRC implementations verified against NIST test vectors, UDS services per ISO 14229-1, byte ordering per AUTOSAR/DBC specs</li>
+          <li><strong>Privacy-first</strong> — no analytics, no tracking, no cookies. Your data never leaves your browser.</li>
+          <li><strong>Mobile-responsive</strong> — works on phones, tablets, and desktops alike</li>
+          <li><strong>PWA-ready</strong> — installable to home screen, works offline</li>
+        </ul>
+        <p style="margin-top:16px">Every tool is a single folder you can download, double-click <code>index.html</code>, and it just works. No server, no configuration, no excuses.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>Built by <a href="https://cedric.wang/">Cedric.Wang</a> — MIT Licensed — <a href="https://github.com/cedricwangrs">GitHub</a></p>
+      <p style="margin-top:8px;font-size:12px">AUTOSAR is a registered trademark. These tools are educational resources and not affiliated with or endorsed by AUTOSAR.</p>
+    </div>
+  </footer>
+
+  <script>
+    var TOOLS = [
+      {name:'AUTOSAR Lab',icon:'\u{1F393}',url:'https://cedricwangrs.github.io/autosar-lab/',module:'AUTOSAR Lab',cat:'sys',desc:'Interactive AUTOSAR BSW architecture learning guide with 7-layer stack visualization, layer deep-dives, and interactive demos.',version:'v1.2',tags:['Learning','Architecture','7 Layers']},
+      {name:'CANcraft',icon:'\u{1F527}',url:'https://cedricwangrs.github.io/cancraft/',module:'Can',cat:'com',desc:'CAN signal encoder/decoder with Intel/Motorola byte order, 8\u00D78 bit-level grid visualization, and bus load calculator.',version:'v1.0',tags:['Signal','Intel/Motorola','Bit-level']},
+      {name:'OSviz',icon:'\u2699\uFE0F',url:'https://cedricwangrs.github.io/osviz/',module:'OS',cat:'sys',desc:'AUTOSAR OS scheduling visualizer with FPS schedule simulation, SVG Gantt chart, and response time analysis (RTA).',version:'v1.0',tags:['Scheduler','FPS','RTA']},
+      {name:'DTC Lab',icon:'\u{1F6A8}',url:'https://cedricwangrs.github.io/dtc-lab/',module:'Dcm (DTC)',cat:'diag',desc:'Diagnostic Trouble Code tool with interactive DTC status byte visualizer, SAE/UDS code decoder, and 17 UDS service reference.',version:'v1.0',tags:['DTC','UDS','Status Byte']},
+      {name:'MemViz',icon:'\u{1F4BE}',url:'https://cedricwangrs.github.io/memviz/',module:'MemMap',cat:'mem',desc:'AUTOSAR memory map visualizer with interactive SVG memory regions, overlap detection, and linker script export (GCC/IAR).',version:'v1.0',tags:['Memory Map','Linker','6 MCU Presets']},
+      {name:'NmViz',icon:'\u{1F310}',url:'https://cedricwangrs.github.io/nmviz/',module:'CanNm',cat:'com',desc:'AUTOSAR network management tool with CanNm state machine (5 states, 8 transitions), multi-node message timeline, and NM message encoder.',version:'v1.0',tags:['CanNm','State Machine','Timeline']},
+      {name:'E2ELab',icon:'\u{1F6E1}\uFE0F',url:'https://cedricwangrs.github.io/e2elab/',module:'E2E',cat:'sec',desc:'End-to-end protection visualizer with E2E P2/P4 wrapper, data byte grid, and CRC calculation per AUTOSAR E2E Profile 2.',version:'v1.0',tags:['E2E','CRC','Safety']},
+      {name:'SecOCLab',icon:'\u{1F510}',url:'https://cedricwangrs.github.io/secoc-lab/',module:'SecOC',cat:'sec',desc:'Secure Onboard Communication tool with AES-128 CMAC, freshness value builder, and SecOC PDU authentication simulator.',version:'v1.0',tags:['SecOC','AES-128','CMAC']},
+      {name:'CanTp Studio',icon:'\u{1F4E6}',url:'https://cedricwangrs.github.io/cantp-studio/',module:'CanTp',cat:'com',desc:'CAN Transport Protocol studio with SF/FF/CF/FC frame builder, segmentation simulator, and timing diagram with STmin/BS.',version:'v1.1',tags:['CanTp','ISO 15765-2','Segmentation']},
+      {name:'ComRouter',icon:'\u{1F500}',url:'https://cedricwangrs.github.io/com-router/',module:'COM',cat:'com',desc:'AUTOSAR COM signal routing studio with bit-level signal pack/unpack, Intel/Motorola support, gateway simulator, and routing verifier.',version:'v1.0',tags:['COM','Signal Routing','Gateway']},
+      {name:'NvM Planner',icon:'\u{1F4BF}',url:'https://cedricwangrs.github.io/nvm-planner/',module:'NvM',cat:'mem',desc:'Non-volatile memory planner with block designer (native/redundant/dataset), memory layout calculator, write strategy simulator, and CRC calculator.',version:'v1.0',tags:['NvM','Flash Wear','CRC']},
+      {name:'Dcm Studio',icon:'\u{1F4E1}',url:'https://cedricwangrs.github.io/dcm-studio/',module:'Dcm (UDS)',cat:'diag',desc:'Diagnostic Communication Manager studio with 25 UDS service explorer, DID editor, session/security state machine, and request handler simulator.',version:'v1.0',tags:['UDS','DID','NRC']},
+    ];
+
+    var STACK_LAYERS = [
+      {label:'Application Layer',modules:[]},
+      {label:'Runtime Environment (RTE)',modules:[]},
+      {label:'Services Layer',modules:[
+        {name:'NvM',cat:'mem',url:'https://cedricwangrs.github.io/nvm-planner/'},
+        {name:'COM',cat:'com',url:'https://cedricwangrs.github.io/com-router/'},
+        {name:'Dcm (UDS)',cat:'diag',url:'https://cedricwangrs.github.io/dcm-studio/'},
+        {name:'Dcm (DTC)',cat:'diag',url:'https://cedricwangrs.github.io/dtc-lab/'},
+        {name:'E2E',cat:'sec',url:'https://cedricwangrs.github.io/e2elab/'},
+        {name:'SecOC',cat:'sec',url:'https://cedricwangrs.github.io/secoc-lab/'},
+      ]},
+      {label:'ECU Abstraction',modules:[]},
+      {label:'MCAL Abstraction',modules:[]},
+      {label:'Complex Drivers',modules:[
+        {name:'OS',cat:'sys',url:'https://cedricwangrs.github.io/osviz/'},
+      ]},
+      {label:'Communication Drivers',modules:[
+        {name:'Can',cat:'com',url:'https://cedricwangrs.github.io/cancraft/'},
+        {name:'CanNm',cat:'com',url:'https://cedricwangrs.github.io/nmviz/'},
+        {name:'CanTp',cat:'com',url:'https://cedricwangrs.github.io/cantp-studio/'},
+      ]},
+      {label:'Memory Drivers',modules:[
+        {name:'MemMap',cat:'mem',url:'https://cedricwangrs.github.io/memviz/'},
+      ]},
+    ];
+
+    var CAT_ICONS = {sys:'\u2699\uFE0F',mem:'\u{1F4BE}',com:'\u{1F4E1}',diag:'\u{1F6A8}',sec:'\u{1F6E1}\uFE0F'};
+
+    var stackHtml = '';
+    for (var i = 0; i < STACK_LAYERS.length; i++) {
+      var layer = STACK_LAYERS[i];
+      stackHtml += '<div class="stack-layer">';
+      stackHtml += '<div class="layer-label">' + layer.label + '</div>';
+      stackHtml += '<div class="layer-modules">';
+      if (layer.modules.length === 0) {
+        stackHtml += '<span style="font-size:12px;color:var(--text-muted)">—</span>';
+      }
+      for (var j = 0; j < layer.modules.length; j++) {
+        var mod = layer.modules[j];
+        stackHtml += '<a href="' + mod.url + '" target="_blank" class="module-chip cat-' + mod.cat + '">';
+        stackHtml += '<span class="icon">' + (CAT_ICONS[mod.cat] || '') + '</span>';
+        stackHtml += mod.name + ' \u2192</a>';
+      }
+      stackHtml += '</div></div>';
+    }
+    stackHtml += '<div class="stack-layer" style="margin-top:12px;border-color:var(--brand)">';
+    stackHtml += '<div class="layer-label" style="color:var(--brand)">\u{1F393} Full Stack</div>';
+    stackHtml += '<div class="layer-modules"><a href="https://cedricwangrs.github.io/autosar-lab/" target="_blank" class="module-chip cat-sys"><span class="icon">\u{1F393}</span>AUTOSAR Lab — Architecture Overview \u2192</a></div>';
+    stackHtml += '</div>';
+    document.getElementById('stackDiagram').innerHTML = stackHtml;
+
+    var toolHtml = '';
+    for (var i = 0; i < TOOLS.length; i++) {
+      var t = TOOLS[i];
+      toolHtml += '<a href="' + t.url + '" target="_blank" class="tool-card">';
+      toolHtml += '<div class="tool-header"><span class="tool-icon">' + t.icon + '</span>';
+      toolHtml += '<div><div class="tool-name">' + t.name + '</div><div class="tool-version">' + t.version + '</div></div></div>';
+      toolHtml += '<div class="tool-desc">' + t.desc + '</div>';
+      toolHtml += '<div class="tool-footer">';
+      for (var k = 0; k < t.tags.length; k++) {
+        toolHtml += '<span class="tool-tag">' + t.tags[k] + '</span>';
+      }
+      toolHtml += '</div><div class="tool-arrow">Open tool \u2192</div></a>';
+    }
+    document.getElementById('toolGrid').innerHTML = toolHtml;
+
+    var stats = [{value:'12',label:'Tools'},{value:'11',label:'BSW Modules Covered'},{value:'0',label:'Dependencies'},{value:'100%',label:'Open Source (MIT)'}];
+    var statsHtml = '';
+    for (var i = 0; i < stats.length; i++) {
+      statsHtml += '<div class="stat-card"><div class="stat-value">' + stats[i].value + '</div><div class="stat-label">' + stats[i].label + '</div></div>';
+    }
+    document.getElementById('statsGrid').innerHTML = statsHtml;
+
+    function toggleTheme() {
+      var html = document.documentElement;
+      var current = html.getAttribute('data-theme') || 'dark';
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try { localStorage.setItem('coverageMapTheme', next); } catch(e) {}
+      document.querySelector('.theme-toggle').textContent = next === 'dark' ? '\u{1F319}' : '\u2600\uFE0F';
+    }
+    (function() {
+      var theme = 'dark';
+      try { theme = localStorage.getItem('coverageMapTheme') || 'dark'; } catch(e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelector('.theme-toggle').textContent = theme === 'dark' ? '\u{1F319}' : '\u2600\uFE0F';
+    })();
+  </script>
+
+<script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
+<script>LA.init({id:"3OM1qRIIsTB5cxKR",ck:"3OM1qRIIsTB5cxKR",autoTrack:true})</script>
+
+</body>
+</html>
