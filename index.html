@@ -1,328 +1,591 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cedric's Dev Playground</title>
-    <style>
-        /* ========================================
-           1. CSS Variables & Theme Logic (Fixed)
-           ======================================== */
-        :root {
-            /* Light Theme as Default */
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --accent-color: #0366d6;
-            --border-color: #e1e4e8;
-            --card-bg: #f6f8fa;
-            --meta-color: #586069;
-            --meta-bg: #ddf4ff;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AUTOSAR BSW Stack Tool Coverage Map | Cedric.Wang</title>
+  <meta name="description" content="Open-source, zero-dependency interactive tools for AUTOSAR BSW developers. 12 tools covering the full stack — from OS scheduling to diagnostic communication.">
+  <meta name="author" content="Cedric.Wang">
+  <meta property="og:title" content="AUTOSAR BSW Stack Tool Coverage Map">
+  <meta property="og:description" content="12 open-source tools for AUTOSAR BSW developers — zero dependencies, works offline.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cedricwangrs.github.io/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AUTOSAR BSW Stack Tool Coverage Map">
+  <meta name="twitter:description" content="12 open-source tools for AUTOSAR BSW developers — zero dependencies, works offline.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%236366f1'/%3E%3Ctext x='50' y='70' font-size='52' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'%3EA%3C/text%3E%3C/svg%3E">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#0a0f1e; --bg-card:#111827; --bg-elevated:#1e293b;
+      --text:#f1f5f9; --text-secondary:#cbd5e1; --text-muted:#94a3b8;
+      --border:#1e293b; --border-hover:#334155;
+      --brand:#6366f1; --brand-light:rgba(99,102,241,0.12);
+      --accent:#06b6d4; --accent-light:rgba(6,182,212,0.1);
+      --success:#16a34a; --warning:#f59e0b; --error:#dc2626;
+      --radius:8px; --radius-lg:12px;
+      --font:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      --font-mono:'SF Mono','Cascadia Code','Fira Code',Consolas,monospace;
+    }
+    [data-theme="light"]{
+      --bg:#f8fafc; --bg-card:#ffffff; --bg-elevated:#f1f5f9;
+      --text:#0f172a; --text-secondary:#475569; --text-muted:#94a3b8;
+      --border:#e2e8f0; --border-hover:#cbd5e1;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;font-size:14px}
+    .container{max-width:1080px;margin:0 auto;padding:0 20px}
+    code{font-family:var(--font-mono);font-size:12px;background:var(--bg-elevated);padding:1px 5px;border-radius:4px}
 
-        /* System Dark Mode: Only applies when no explicit theme is set */
-        @media (prefers-color-scheme: dark) {
-            :root:not([data-theme="light"]) {
-                --bg-color: #0d1117;
-                --text-color: #c9d1d9;
-                --accent-color: #58a6ff;
-                --border-color: #30363d;
-                --card-bg: #161b22;
-                --meta-color: #8b949e;
-                --meta-bg: #388bfd26;
-            }
-        }
+    /* Scroll progress */
+    .scroll-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--brand),var(--accent));z-index:200;transition:width 80ms;width:0}
 
-        /* Forced Dark Mode */
-        [data-theme="dark"] {
-            --bg-color: #0d1117;
-            --text-color: #c9d1d9;
-            --accent-color: #58a6ff;
-            --border-color: #30363d;
-            --card-bg: #161b22;
-            --meta-color: #8b949e;
-            --meta-bg: #388bfd26;
-        }
-        
-        /* Forced Light Mode (Ensures system dark mode is overridden) */
-        [data-theme="light"] {
-            --bg-color: #ffffff;
-            --text-color: #333333;
-            --accent-color: #0366d6;
-            --border-color: #e1e4e8;
-            --card-bg: #f6f8fa;
-            --meta-color: #586069;
-            --meta-bg: #ddf4ff;
-        }
+    /* Top nav */
+    .topnav{position:sticky;top:0;z-index:100;background:rgba(10,15,30,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:44px;display:flex;align-items:center}
+    [data-theme="light"] .topnav{background:rgba(248,250,252,.85)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%}
+    .nav-logo{font-weight:700;font-size:13px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:6px}
+    .nav-logo .dot{width:8px;height:8px;border-radius:50%;background:var(--brand)}
+    .nav-links{display:flex;gap:14px}
+    .nav-links a{font-size:12px;color:var(--text-muted);text-decoration:none;transition:color 200ms}
+    .nav-links a:hover,.nav-links a.active{color:var(--brand)}
+    .nav-actions{display:flex;align-items:center;gap:6px}
+    .lang-toggle{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+    .lang-btn{padding:3px 8px;font-size:11px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:all 200ms;font-family:var(--font)}
+    .lang-btn.active{background:var(--brand);color:#fff}
+    .theme-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all 200ms}
+    .theme-btn:hover{border-color:var(--brand)}
 
-        /* ========================================
-           2. Base & Layout Styles
-           ======================================== */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    /* Hero */
+    .hero{padding:48px 0 36px;text-align:center;background:linear-gradient(180deg,var(--brand-light) 0%,transparent 100%);border-bottom:1px solid var(--border)}
+    .hero h1{font-size:30px;font-weight:800;margin-bottom:8px;letter-spacing:-.5px}
+    .hero h1 .accent{background:linear-gradient(135deg,var(--brand),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero p{font-size:14px;color:var(--text-secondary);max-width:580px;margin:0 auto 16px}
+    .hero-badges{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+    .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 10px;border-radius:16px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--bg-card)}
+    .badge-brand{color:var(--brand);border-color:var(--brand)}
+    .badge-green{color:var(--success);border-color:var(--success)}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.5;
-            transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+    /* Section */
+    section{padding:36px 0}
+    section h2{font-size:20px;font-weight:700;margin-bottom:4px}
+    section .subtitle{color:var(--text-muted);font-size:13px;margin-bottom:20px}
 
-        /* Header */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            border-bottom: 1px solid var(--border-color);
-        }
+    /* Category filter */
+    .tools-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .filter-chips{display:flex;gap:4px;flex-wrap:wrap}
+    .filter-chip{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--bg-card);color:var(--text-muted);cursor:pointer;transition:all 200ms;font-family:var(--font)}
+    .filter-chip:hover{border-color:var(--border-hover);color:var(--text)}
+    .filter-chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .search-box{flex:1;min-width:140px;padding:5px 10px;font-size:12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text);font-family:var(--font)}
+    .search-box:focus{outline:none;border-color:var(--brand)}
+    .search-box::placeholder{color:var(--text-muted)}
 
-        h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
+    /* Tool grid */
+    .tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+    .tool-card{position:relative;padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);transition:all 200ms;text-decoration:none;display:flex;flex-direction:column;gap:6px}
+    .tool-card:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.15)}
+    .tool-card.hidden{display:none}
+    .tool-step{position:absolute;top:10px;right:12px;font-size:10px;font-weight:700;color:var(--text-muted);opacity:.4}
+    .tool-header{display:flex;align-items:center;gap:8px}
+    .tool-icon{font-size:22px}
+    .tool-name{font-size:14px;font-weight:700;color:var(--text)}
+    .tool-version{font-size:10px;color:var(--text-muted);font-weight:400;margin-left:4px}
+    .tool-desc{font-size:12px;color:var(--text-secondary);line-height:1.45}
+    .tool-footer{display:flex;gap:4px;flex-wrap:wrap;margin-top:2px}
+    .tool-tag{padding:1px 6px;border-radius:4px;font-size:10px;font-weight:500;background:var(--bg-elevated);color:var(--text-muted)}
+    .tool-arrow{margin-top:4px;font-size:11px;color:var(--brand);font-weight:500}
 
-        #theme-toggle {
-            background: transparent;
-            border: none;
-            color: var(--text-color);
-            font-size: 1.5rem;
-            cursor: pointer;
-            padding: 4px;
-            transition: transform 0.2s;
-            line-height: 1;
-        }
+    /* Category colors */
+    .cat-sys{color:#8b5cf6;border-color:#8b5cf6;background:rgba(139,92,246,.08)}
+    .cat-mem{color:#06b6d4;border-color:#06b6d4;background:rgba(6,182,212,.08)}
+    .cat-com{color:#3b82f6;border-color:#3b82f6;background:rgba(59,130,246,.08)}
+    .cat-diag{color:#e11d48;border-color:#e11d48;background:rgba(225,29,72,.08)}
+    .cat-sec{color:#f59e0b;border-color:#f59e0b;background:rgba(245,158,11,.08)}
 
-        #theme-toggle:hover {
-            transform: scale(1.1);
-        }
+    /* Stack diagram */
+    .stack-diagram{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:16px}
+    .stack-row{display:flex;border-bottom:1px solid var(--border);transition:background 200ms}
+    .stack-row:last-child{border-bottom:none}
+    .stack-row[data-tools="1"]:hover{background:var(--brand-light)}
+    .stack-num{display:flex;align-items:center;justify-content:center;width:42px;font-size:10px;font-weight:700;color:var(--text-muted);background:var(--bg-elevated);border-right:1px solid var(--border);flex-shrink:0}
+    .stack-content{flex:1;padding:8px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:42px}
+    .stack-label{font-size:12px;font-weight:600;min-width:140px;flex-shrink:0}
+    .stack-count{font-size:10px;color:var(--text-muted);font-weight:400}
+    .stack-modules{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+    .module-chip{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500;border:1px solid;cursor:pointer;transition:all 200ms;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+    .module-chip:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.15)}
+    .module-chip .icon{font-size:12px}
+    .no-tools{font-size:11px;color:var(--text-muted);font-style:italic;opacity:.6}
 
-        /* Main Content */
-        main {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px;
-            flex: 1;
-        }
+    /* Why section */
+    .intro p{font-size:13px;color:var(--text-secondary);margin-bottom:10px}
+    .intro strong{color:var(--text)}
+    .philosophy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-top:16px}
+    .phil-item{padding:12px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text-secondary)}
+    .phil-item strong{color:var(--text);display:block;margin-bottom:2px;font-size:13px}
 
-        /* Project List (Double Column) */
-        .project-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 16px;
-        }
+    /* Stats */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stat-card{padding:16px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);text-align:center}
+    .stat-value{font-size:26px;font-weight:800;background:linear-gradient(135deg,var(--brand),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .stat-label{font-size:11px;color:var(--text-muted);margin-top:2px}
 
-        .project-item {
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 16px;
-            background-color: var(--card-bg);
-            transition: border-color 0.2s, box-shadow 0.2s;
-            display: flex;
-            flex-direction: column;
-        }
+    /* Footer */
+    footer{padding:28px 0 20px;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:12px}
+    footer a{color:var(--brand);text-decoration:none}
+    footer a:hover{text-decoration:underline}
+    .footer-links{display:flex;justify-content:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+    .footer-links a{font-size:12px;color:var(--text-secondary)}
 
-        .project-item:hover {
-            border-color: var(--accent-color);
-            box-shadow: 0 3px 12px rgba(0,0,0,0.08);
-        }
+    /* Back to top */
+    .back-top{position:fixed;bottom:20px;right:20px;width:36px;height:36px;border-radius:50%;background:var(--bg-card);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0;pointer-events:none;transition:all 300ms;z-index:100;color:var(--text)}
+    .back-top.visible{opacity:1;pointer-events:auto}
+    .back-top:hover{border-color:var(--brand);transform:translateY(-2px)}
 
-        .project-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            margin-bottom: 8px;
-            gap: 8px;
-        }
-
-        .project-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-
-        .project-title:hover {
-            text-decoration: underline;
-        }
-
-        .project-meta {
-            display: flex;
-            gap: 8px;
-            font-size: 0.75rem;
-            color: var(--meta-color);
-            flex-shrink: 0;
-        }
-
-        .tag {
-            background-color: var(--meta-bg);
-            color: var(--accent-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-
-        .project-desc {
-            font-size: 0.9rem;
-            color: var(--text-color);
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            padding: 24px;
-            color: var(--meta-color);
-            font-size: 0.85rem;
-            border-top: 1px solid var(--border-color);
-            margin-top: auto;
-        }
-
-        /* 3. Footer Link: No link style */
-        footer a {
-            color: inherit;
-            text-decoration: none;
-        }
-        
-        /* Optional: subtle hint on hover for footer link */
-        footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    /* Responsive */
+    @media(max-width:768px){
+      .hero{padding:36px 0 28px}
+      .hero h1{font-size:22px}
+      .hero p{font-size:13px}
+      .nav-links{display:none}
+      .tool-grid{grid-template-columns:1fr}
+      .stats-row{grid-template-columns:1fr 1fr}
+      .stack-content{flex-direction:column;align-items:flex-start}
+      .stack-label{min-width:auto}
+      section{padding:28px 0}
+      .philosophy-grid{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Cedric's Dev Playground</h1>
-        <button id="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">☀️</button>
-    </header>
+  <div class="scroll-progress" id="scrollProgress"></div>
 
-    <main>
-        <div class="project-list">
-            <!-- CANcraft -->
-            <div class="project-item">
-                <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/CANcraft" class="project-title" target="_blank">CANcraft</a>
-                    <div class="project-meta">
-                        <span class="tag">Public</span>
-                    </div>
-                </div>
-                <p class="project-desc">CAN Signal Studio > Encode, decode, and visualize CAN signals in your browser. Bit-level visualization, byte order.</p>
-            </div>
-
-            <!-- DTC-Lab -->
-            <div class="project-item">
-                <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/DTC-Lab" class="project-title" target="_blank">DTC-Lab</a>
-                    <div class="project-meta">
-                        <span class="tag">Public</span>
-                    </div>
-                </div>
-                <p class="project-desc">DTC Lab — Diagnostic Trouble Code Studio. Decode DTC codes, visualize status bytes, and reference UDS services — all in your browser.</p>
-            </div>
-
-            <!-- OSviz -->
-            <div class="project-item">
-                <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/OSviz" class="project-title" target="_blank">OSviz</a>
-                    <div class="project-meta">
-                        <span class="tag">Public</span>
-                    </div>
-                </div>
-                <p class="project-desc">Simulate and visualize AUTOSAR OS task scheduling with interactive Gantt charts. Fixed-priority preemptive scheduling.</p>
-            </div>
-
-            <!-- devkit -->
-            <div class="project-item">
-                <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/devkit" class="project-title" target="_blank">devkit</a>
-                    <div class="project-meta">
-                        <span class="tag">Public</span>
-                    </div>
-                </div>
-                <p class="project-desc">A developer tool collection that introduces mechanisms you won't find elsewhere: Smart Detect and smart context-aware tool selection.</p>
-            </div>
-
-            <!-- autosar-lab -->
-            <div class="project-item">
-                <div class="project-header">
-                    <a href="https://cedricwangrs.github.io/autosar-lab/" class="project-title" target="_blank">autosar-lab</a>
-                    <div class="project-meta">
-                        <span class="tag">Public</span>
-                    </div>
-                </div>
-                <p class="project-desc">Interactive AUTOSAR learning and simulation platform. Helps newcomers quickly understand AUTOSAR concepts through visualization.</p>
-            </div>
+  <nav class="topnav">
+    <div class="container nav-inner">
+      <a href="#top" class="nav-logo"><span class="dot"></span>AUTOSAR Tools</a>
+      <div class="nav-links">
+        <a href="#tools" data-i18n="nav.tools">Tools</a>
+        <a href="#stack" data-i18n="nav.stack">Stack</a>
+        <a href="#why" data-i18n="nav.why">Why</a>
+        <a href="#stats" data-i18n="nav.stats">Stats</a>
+      </div>
+      <div class="nav-actions">
+        <div class="lang-toggle">
+          <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
+          <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">中文</button>
         </div>
-    </main>
+        <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☀️</button>
+      </div>
+    </div>
+  </nav>
 
-    <footer>
-        <!-- 4. Footer link plain text style, opens in new window -->
-        © <a href="https://cedric.wang" target="_blank">Cedric.Wang</a>
-    </footer>
+  <div id="top"></div>
 
-    <script>
-        // Theme Logic
-        function getTheme() {
-            return localStorage.getItem('theme') || 'system';
+  <div class="hero">
+    <div class="container">
+      <h1 data-i18n="hero.title">AUTOSAR BSW Stack <span class="accent">Tool Coverage Map</span></h1>
+      <p data-i18n="hero.desc">Open-source, zero-dependency interactive tools for AUTOSAR BSW developers. From OS scheduling to diagnostic communication — 12 tools covering the full stack.</p>
+      <div class="hero-badges">
+        <span class="badge badge-brand" data-i18n="badge.tools">12 Tools</span>
+        <span class="badge badge-green" data-i18n="badge.mit">MIT Licensed</span>
+        <span class="badge" data-i18n="badge.nodep">Zero Dependencies</span>
+        <span class="badge" data-i18n="badge.offline">Works Offline</span>
+      </div>
+    </div>
+  </div>
+
+  <section id="tools">
+    <div class="container">
+      <h2 data-i18n="tools.title">All Tools</h2>
+      <p class="subtitle" data-i18n="tools.subtitle">12 open-source tools — click to launch</p>
+      <div class="tools-toolbar">
+        <div class="filter-chips" id="filterChips"></div>
+        <input type="text" class="search-box" id="searchBox" placeholder="Search tools…" oninput="onSearch(this.value)">
+      </div>
+      <div class="tool-grid" id="toolGrid"></div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="container">
+      <h2 data-i18n="stack.title">BSW Stack Coverage</h2>
+      <p class="subtitle" data-i18n="stack.subtitle">Click any module to open the corresponding tool in a new tab</p>
+      <div class="stack-diagram" id="stackDiagram"></div>
+    </div>
+  </section>
+
+  <section id="why">
+    <div class="container">
+      <h2 data-i18n="why.title">Why These Tools Exist</h2>
+      <p class="subtitle" data-i18n="why.subtitle">The gap between specification and understanding</p>
+      <div class="intro">
+        <p data-i18n="why.p1">AUTOSAR is powerful but notoriously hard to learn. The specifications span thousands of pages. Configuration tools cost tens of thousands of dollars per seat. And engineers are expected to <strong>understand bit-level signal encoding, state machines, timing constraints, and protocol details</strong> — often with nothing but PDFs and spreadsheets.</p>
+        <p data-i18n="why.p2">These tools exist to bridge that gap. Each one takes a specific BSW module and makes it <strong>visible, interactive, and testable</strong> — right in the browser, no installation, no license fees, no dependencies. Whether you are a student learning AUTOSAR for the first time, or a senior engineer debugging a tricky signal routing issue, these tools give you immediate clarity.</p>
+        <p data-i18n="why.p3">Everything is open-source under MIT license. No tracking, no analytics, no data collection. Just tools that work.</p>
+      </div>
+      <div class="philosophy-grid">
+        <div class="phil-item" data-i18n="phil.1"><strong>Zero dependencies</strong> — pure HTML/CSS/JS, works via <code>file://</code>, no build step, no npm install</div>
+        <div class="phil-item" data-i18n="phil.2"><strong>Interactive by design</strong> — not documentation you read, but tools you use. Click, type, simulate, verify.</div>
+        <div class="phil-item" data-i18n="phil.3"><strong>Standards-accurate</strong> — CRC verified against NIST test vectors, UDS per ISO 14229-1, byte ordering per AUTOSAR/DBC specs</div>
+        <div class="phil-item" data-i18n="phil.4"><strong>Privacy-first</strong> — no analytics, no tracking, no cookies. Your data never leaves your browser.</div>
+        <div class="phil-item" data-i18n="phil.5"><strong>Mobile-responsive</strong> — works on phones, tablets, and desktops alike</div>
+        <div class="phil-item" data-i18n="phil.6"><strong>PWA-ready</strong> — installable to home screen, works offline</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stats">
+    <div class="container">
+      <h2 data-i18n="stats.title">By the Numbers</h2>
+      <p class="subtitle" data-i18n="stats.subtitle">What this toolkit delivers</p>
+      <div class="stats-row" id="statsRow"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-links">
+        <a href="https://cedric.wang/">Cedric.Wang</a>
+        <a href="https://github.com/cedricwangrs">GitHub</a>
+      </div>
+      <p data-i18n="footer.built">Built by <a href="https://cedric.wang/">Cedric.Wang</a> — MIT Licensed — <a href="https://github.com/cedricwangrs">GitHub</a></p>
+      <p style="margin-top:6px;font-size:11px" data-i18n="footer.updated">Last updated: August 2026</p>
+      <p style="margin-top:6px;font-size:11px" data-i18n="footer.disclaimer">AUTOSAR is a registered trademark. These tools are educational resources and not affiliated with or endorsed by AUTOSAR.</p>
+    </div>
+  </footer>
+
+  <button class="back-top" id="backTop" onclick="scrollToTop()" title="Back to top">↑</button>
+
+  <script>
+    /* ====== Bilingual translations ====== */
+    var I18N = {
+      en: {
+        'nav.tools':'Tools','nav.stack':'Stack','nav.why':'Why','nav.stats':'Stats',
+        'hero.title':'AUTOSAR BSW Stack <span class="accent">Tool Coverage Map</span>',
+        'hero.desc':'Open-source, zero-dependency interactive tools for AUTOSAR BSW developers. From OS scheduling to diagnostic communication — 12 tools covering the full stack.',
+        'badge.tools':'12 Tools','badge.mit':'MIT Licensed','badge.nodep':'Zero Dependencies','badge.offline':'Works Offline',
+        'tools.title':'All Tools','tools.subtitle':'12 open-source tools — click to launch','tools.open':'Open tool →','tools.search':'Search tools…',
+        'tools.filter.all':'All','tools.filter.sys':'System','tools.filter.mem':'Memory','tools.filter.com':'Communication','tools.filter.diag':'Diagnostic','tools.filter.sec':'Security',
+        'stack.title':'BSW Stack Coverage','stack.subtitle':'Click any module to open the corresponding tool in a new tab',
+        'stack.above':'above BSW scope','stack.notcovered':'not yet covered','stack.fullstack':'Full Stack Overview',
+        'why.title':'Why These Tools Exist','why.subtitle':'The gap between specification and understanding',
+        'why.p1':'AUTOSAR is powerful but notoriously hard to learn. The specifications span thousands of pages. Configuration tools cost tens of thousands of dollars per seat. And engineers are expected to <strong>understand bit-level signal encoding, state machines, timing constraints, and protocol details</strong> — often with nothing but PDFs and spreadsheets.',
+        'why.p2':'These tools exist to bridge that gap. Each one takes a specific BSW module and makes it <strong>visible, interactive, and testable</strong> — right in the browser, no installation, no license fees, no dependencies. Whether you are a student learning AUTOSAR for the first time, or a senior engineer debugging a tricky signal routing issue, these tools give you immediate clarity.',
+        'why.p3':'Everything is open-source under MIT license. No tracking, no analytics, no data collection. Just tools that work.',
+        'phil.1':'<strong>Zero dependencies</strong> — pure HTML/CSS/JS, works via <code>file://</code>, no build step, no npm install',
+        'phil.2':'<strong>Interactive by design</strong> — not documentation you read, but tools you use. Click, type, simulate, verify.',
+        'phil.3':'<strong>Standards-accurate</strong> — CRC verified against NIST test vectors, UDS per ISO 14229-1, byte ordering per AUTOSAR/DBC specs',
+        'phil.4':'<strong>Privacy-first</strong> — no analytics, no tracking, no cookies. Your data never leaves your browser.',
+        'phil.5':'<strong>Mobile-responsive</strong> — works on phones, tablets, and desktops alike',
+        'phil.6':'<strong>PWA-ready</strong> — installable to home screen, works offline',
+        'stats.title':'By the Numbers','stats.subtitle':'What this toolkit delivers',
+        'stats.tools':'Tools','stats.modules':'BSW Modules','stats.deps':'Dependencies','stats.open':'Open Source',
+        'footer.built':'Built by <a href="https://cedric.wang/">Cedric.Wang</a> — MIT Licensed — <a href="https://github.com/cedricwangrs">GitHub</a>',
+        'footer.updated':'Last updated: August 2026',
+        'footer.disclaimer':'AUTOSAR is a registered trademark. These tools are educational resources and not affiliated with or endorsed by AUTOSAR.',
+        'stack.layer.app':'Application Layer','stack.layer.rte':'Runtime Environment (RTE)',
+        'stack.layer.svc':'Services Layer','stack.layer.ecu':'ECU Abstraction',
+        'stack.layer.mcal':'MCAL','stack.layer.mem':'Memory Mapping',
+      },
+      zh: {
+        'nav.tools':'工具','nav.stack':'协议栈','nav.why':'初衷','nav.stats':'数据',
+        'hero.title':'AUTOSAR BSW <span class="accent">工具覆盖图谱</span>',
+        'hero.desc':'开源、零依赖的 AUTOSAR BSW 交互式工具。从 OS 调度到诊断通信 — 12 个工具覆盖完整协议栈。',
+        'badge.tools':'12 个工具','badge.mit':'MIT 开源','badge.nodep':'零依赖','badge.offline':'离线可用',
+        'tools.title':'全部工具','tools.subtitle':'12 个开源工具 — 点击启动','tools.open':'打开工具 →','tools.search':'搜索工具…',
+        'tools.filter.all':'全部','tools.filter.sys':'系统','tools.filter.mem':'存储','tools.filter.com':'通信','tools.filter.diag':'诊断','tools.filter.sec':'安全',
+        'stack.title':'BSW 协议栈覆盖','stack.subtitle':'点击任意模块在新标签页中打开对应工具',
+        'stack.above':'BSW 范围之外','stack.notcovered':'尚未覆盖','stack.fullstack':'全栈总览',
+        'why.title':'为什么做这些工具','why.subtitle':'规范与理解之间的鸿沟',
+        'why.p1':'AUTOSAR 功能强大但出了名地难学。规范文档长达数千页。商业配置工具每个席位动辄数万美元。而工程师需要<strong>理解位级信号编码、状态机、时序约束和协议细节</strong> — 往往只有 PDF 和 Excel 表格可用。',
+        'why.p2':'这些工具就是为了弥合这个鸿沟。每个工具聚焦一个 BSW 模块，让它变得<strong>可见、可交互、可验证</strong> — 直接在浏览器中运行，无需安装、无需许可证、无需依赖。无论你是初学 AUTOSAR 的学生，还是调试信号路由问题的资深工程师，这些工具都能给你即时清晰的答案。',
+        'why.p3':'所有代码均以 MIT 协议开源。无追踪、无分析、无数据收集。只是能用的工具。',
+        'phil.1':'<strong>零依赖</strong> — 纯 HTML/CSS/JS，通过 <code>file://</code> 协议运行，无需构建，无需 npm install',
+        'phil.2':'<strong>交互式设计</strong> — 不是给你读的文档，而是给你用的工具。点击、输入、模拟、验证。',
+        'phil.3':'<strong>标准准确</strong> — CRC 经 NIST 测试向量验证，UDS 遵循 ISO 14229-1，字节序遵循 AUTOSAR/DBC 规范',
+        'phil.4':'<strong>隐私优先</strong> — 无分析、无追踪、无 Cookie。你的数据永远不会离开浏览器。',
+        'phil.5':'<strong>移动端适配</strong> — 手机、平板、桌面端均可使用',
+        'phil.6':'<strong>PWA 就绪</strong> — 可安装到主屏幕，离线可用',
+        'stats.title':'数据一览','stats.subtitle':'这套工具集带来了什么',
+        'stats.tools':'个工具','stats.modules':'个 BSW 模块','stats.deps':'个依赖','stats.open':'开源',
+        'footer.built':'由 <a href="https://cedric.wang/">Cedric.Wang</a> 构建 — MIT 协议 — <a href="https://github.com/cedricwangrs">GitHub</a>',
+        'footer.updated':'最后更新：2026 年 8 月',
+        'footer.disclaimer':'AUTOSAR 是注册商标。这些工具是教学资源，与 AUTOSAR 组织无隶属关系，也未获其认可。',
+        'stack.layer.app':'应用层','stack.layer.rte':'运行时环境 (RTE)',
+        'stack.layer.svc':'服务层','stack.layer.ecu':'ECU 抽象层',
+        'stack.layer.mcal':'微控制器抽象层 (MCAL)','stack.layer.mem':'内存映射',
+      }
+    };
+
+    /* ====== Tool data ====== */
+    var TOOLS = [
+      {name:'AUTOSAR Lab',icon:'🎓',url:'https://cedricwangrs.github.io/autosar-lab/',cat:'sys',version:'v1.2',step:1,
+        tags:{en:['Learning','Architecture','7 Layers'],zh:['学习','架构','7层']},
+        desc:{en:'Interactive AUTOSAR BSW architecture learning guide with 7-layer stack visualization, layer deep-dives, and interactive demos.',
+              zh:'交互式 AUTOSAR BSW 架构学习指南，含 7 层协议栈可视化、层级详解和交互演示。'}},
+      {name:'CANcraft',icon:'🔧',url:'https://cedricwangrs.github.io/CANcraft/',cat:'com',version:'v1.0',step:2,
+        tags:{en:['Signal','Intel/Motorola','Bit-level'],zh:['信号','Intel/Motorola','位级']},
+        desc:{en:'CAN signal encoder/decoder with Intel/Motorola byte order, 8×8 bit-level grid visualization, and bus load calculator.',
+              zh:'CAN 信号编解码器，支持 Intel/Motorola 字节序、8×8 位级网格可视化和总线负载计算器。'}},
+      {name:'OSviz',icon:'⚙️',url:'https://cedricwangrs.github.io/OSviz/',cat:'sys',version:'v1.0',step:3,
+        tags:{en:['Scheduler','FPS','RTA'],zh:['调度器','FPS','响应时间分析']},
+        desc:{en:'AUTOSAR OS scheduling visualizer with FPS schedule simulation, SVG Gantt chart, and response time analysis (RTA).',
+              zh:'AUTOSAR OS 调度可视化器，含 FPS 调度仿真、SVG 甘特图和响应时间分析 (RTA)。'}},
+      {name:'DTC Lab',icon:'🚨',url:'https://cedricwangrs.github.io/DTC-Lab/',cat:'diag',version:'v1.0',step:4,
+        tags:{en:['DTC','UDS','Status Byte'],zh:['故障码','UDS','状态字节']},
+        desc:{en:'Diagnostic Trouble Code tool with interactive DTC status byte visualizer, SAE/UDS code decoder, and 17 UDS service reference.',
+              zh:'诊断故障码工具，含交互式 DTC 状态字节可视化器、SAE/UDS 码解码器和 17 种 UDS 服务参考。'}},
+      {name:'MemViz',icon:'💾',url:'https://cedricwangrs.github.io/MemViz/',cat:'mem',version:'v1.0',step:5,
+        tags:{en:['Memory Map','Linker','6 MCU Presets'],zh:['内存映射','链接脚本','6种MCU预设']},
+        desc:{en:'AUTOSAR memory map visualizer with interactive SVG memory regions, overlap detection, and linker script export (GCC/IAR).',
+              zh:'AUTOSAR 内存映射可视化器，含交互式 SVG 内存区域、重叠检测和链接脚本导出 (GCC/IAR)。'}},
+      {name:'NmViz',icon:'🌐',url:'https://cedricwangrs.github.io/NmViz/',cat:'com',version:'v1.0',step:6,
+        tags:{en:['CanNm','State Machine','Timeline'],zh:['CanNm','状态机','时间线']},
+        desc:{en:'AUTOSAR network management tool with CanNm state machine (5 states, 8 transitions), multi-node message timeline, and NM message encoder.',
+              zh:'AUTOSAR 网络管理工具，含 CanNm 状态机 (5 状态 8 转换)、多节点消息时间线和 NM 消息编码器。'}},
+      {name:'E2ELab',icon:'🛡️',url:'https://cedricwangrs.github.io/E2ELab/',cat:'sec',version:'v1.0',step:7,
+        tags:{en:['E2E','CRC','Safety'],zh:['E2E','CRC','功能安全']},
+        desc:{en:'End-to-end protection visualizer with E2E P2/P4 wrapper, data byte grid, and CRC calculation per AUTOSAR E2E Profile 2.',
+              zh:'端到端保护可视化器，含 E2E P2/P4 包装器、数据字节网格和 AUTOSAR E2E Profile 2 CRC 计算。'}},
+      {name:'SecOCLab',icon:'🔒',url:'https://cedricwangrs.github.io/SecOC-Lab/',cat:'sec',version:'v1.0',step:8,
+        tags:{en:['SecOC','AES-128','CMAC'],zh:['SecOC','AES-128','CMAC']},
+        desc:{en:'Secure Onboard Communication tool with AES-128 CMAC, freshness value builder, and SecOC PDU authentication simulator.',
+              zh:'车载安全通信工具，含 AES-128 CMAC、新鲜值构建器和 SecOC PDU 认证仿真器。'}},
+      {name:'CanTp Studio',icon:'📦',url:'https://cedricwangrs.github.io/CanTp-Studio/',cat:'com',version:'v1.1',step:9,
+        tags:{en:['CanTp','ISO 15765-2','Segmentation'],zh:['CanTp','ISO 15765-2','分段传输']},
+        desc:{en:'CAN Transport Protocol studio with SF/FF/CF/FC frame builder, segmentation simulator, and timing diagram with STmin/BS.',
+              zh:'CAN 传输协议工作室，含 SF/FF/CF/FC 帧构建器、分段仿真器和带 STmin/BS 的时序图。'}},
+      {name:'ComRouter',icon:'🔀',url:'https://cedricwangrs.github.io/ComRouter/',cat:'com',version:'v1.0',step:10,
+        tags:{en:['COM','Signal Routing','Gateway'],zh:['COM','信号路由','网关']},
+        desc:{en:'AUTOSAR COM signal routing studio with bit-level signal pack/unpack, Intel/Motorola support, gateway simulator, and routing verifier.',
+              zh:'AUTOSAR COM 信号路由工作室，含位级信号打包/解包、Intel/Motorola 支持、网关仿真器和路由验证器。'}},
+      {name:'NvM Planner',icon:'💿',url:'https://cedricwangrs.github.io/NvM-Planner/',cat:'mem',version:'v1.0',step:11,
+        tags:{en:['NvM','Flash Wear','CRC'],zh:['NvM','闪存磨损','CRC']},
+        desc:{en:'Non-volatile memory planner with block designer (native/redundant/dataset), memory layout calculator, write strategy simulator, and CRC calculator.',
+              zh:'非易失性存储规划器，含块设计器 (native/redundant/dataset)、内存布局计算器、写策略仿真器和 CRC 计算器。'}},
+      {name:'Dcm Studio',icon:'📨',url:'https://cedricwangrs.github.io/Dcm-Studio/',cat:'diag',version:'v1.0',step:12,
+        tags:{en:['UDS','DID','NRC'],zh:['UDS','DID','NRC']},
+        desc:{en:'Diagnostic Communication Manager studio with 25 UDS service explorer, DID editor, session/security state machine, and request handler simulator.',
+              zh:'诊断通信管理工作室，含 25 种 UDS 服务浏览器、DID 编辑器、会话/安全状态机和请求处理仿真器。'}},
+    ];
+
+    /* ====== Stack layers data ====== */
+    var STACK_LAYERS = [
+      {num:'L7',labelKey:'stack.layer.app',modules:[]},
+      {num:'L6',labelKey:'stack.layer.rte',modules:[]},
+      {num:'L5',labelKey:'stack.layer.svc',modules:[
+        {name:'OS',cat:'sys',url:'https://cedricwangrs.github.io/OSviz/'},
+        {name:'NvM',cat:'mem',url:'https://cedricwangrs.github.io/NvM-Planner/'},
+        {name:'COM',cat:'com',url:'https://cedricwangrs.github.io/ComRouter/'},
+        {name:'CanTp',cat:'com',url:'https://cedricwangrs.github.io/CanTp-Studio/'},
+        {name:'CanNm',cat:'com',url:'https://cedricwangrs.github.io/NmViz/'},
+        {name:'Dcm (UDS)',cat:'diag',url:'https://cedricwangrs.github.io/Dcm-Studio/'},
+        {name:'Dcm (DTC)',cat:'diag',url:'https://cedricwangrs.github.io/DTC-Lab/'},
+        {name:'E2E',cat:'sec',url:'https://cedricwangrs.github.io/E2ELab/'},
+        {name:'SecOC',cat:'sec',url:'https://cedricwangrs.github.io/SecOC-Lab/'},
+      ]},
+      {num:'L4',labelKey:'stack.layer.ecu',modules:[]},
+      {num:'L3',labelKey:'stack.layer.mcal',modules:[
+        {name:'Can',cat:'com',url:'https://cedricwangrs.github.io/CANcraft/'},
+      ]},
+      {num:'L2',labelKey:'stack.layer.mem',modules:[
+        {name:'MemMap',cat:'mem',url:'https://cedricwangrs.github.io/MemViz/'},
+      ]},
+    ];
+
+    var CAT_ICONS = {sys:'⚙️',mem:'💾',com:'📡',diag:'🚨',sec:'🛡️'};
+    var CAT_KEYS = {sys:'tools.filter.sys',mem:'tools.filter.mem',com:'tools.filter.com',diag:'tools.filter.diag',sec:'tools.filter.sec'};
+
+    /* ====== State ====== */
+    var currentLang = 'en';
+    var currentFilter = 'all';
+    var currentSearch = '';
+
+    function t(key) { return I18N[currentLang][key] || I18N.en[key] || key; }
+
+    /* ====== Render functions ====== */
+    function renderFilterChips() {
+      var cats = ['all','sys','mem','com','diag','sec'];
+      var counts = {all:TOOLS.length, sys:0, mem:0, com:0, diag:0, sec:0};
+      for (var i = 0; i < TOOLS.length; i++) counts[TOOLS[i].cat]++;
+      var html = '';
+      for (var c = 0; c < cats.length; c++) {
+        var cat = cats[c];
+        var icon = cat === 'all' ? '' : CAT_ICONS[cat] + ' ';
+        var label = t('tools.filter.' + cat);
+        var active = currentFilter === cat ? ' active' : '';
+        html += '<button class="filter-chip' + active + '" onclick="setFilter(\'' + cat + '\')">' + icon + label + ' (' + counts[cat] + ')</button>';
+      }
+      document.getElementById('filterChips').innerHTML = html;
+    }
+
+    function renderTools() {
+      var html = '';
+      var visible = 0;
+      for (var i = 0; i < TOOLS.length; i++) {
+        var tool = TOOLS[i];
+        var catMatch = currentFilter === 'all' || tool.cat === currentFilter;
+        var q = currentSearch.toLowerCase();
+        var searchMatch = !q ||
+          tool.name.toLowerCase().indexOf(q) >= 0 ||
+          tool.desc.en.toLowerCase().indexOf(q) >= 0 ||
+          tool.desc.zh.indexOf(q) >= 0;
+        if (!catMatch || !searchMatch) continue;
+        visible++;
+        var desc = currentLang === 'zh' ? tool.desc.zh : tool.desc.en;
+        var tags = currentLang === 'zh' ? tool.tags.zh : tool.tags.en;
+        html += '<a href="' + tool.url + '" target="_blank" class="tool-card">';
+        html += '<span class="tool-step">#' + tool.step + '</span>';
+        html += '<div class="tool-header"><span class="tool-icon">' + tool.icon + '</span>';
+        html += '<div><span class="tool-name">' + tool.name + '</span><span class="tool-version">' + tool.version + '</span></div></div>';
+        html += '<div class="tool-desc">' + desc + '</div>';
+        html += '<div class="tool-footer">';
+        for (var k = 0; k < tags.length; k++) html += '<span class="tool-tag">' + tags[k] + '</span>';
+        html += '</div><div class="tool-arrow">' + t('tools.open') + '</div></a>';
+      }
+      if (visible === 0) {
+        html = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);font-size:13px">' +
+          (currentLang === 'zh' ? '没有找到匹配的工具' : 'No tools found matching your search') + '</div>';
+      }
+      document.getElementById('toolGrid').innerHTML = html;
+    }
+
+    function renderStack() {
+      var html = '';
+      for (var i = 0; i < STACK_LAYERS.length; i++) {
+        var layer = STACK_LAYERS[i];
+        var hasTools = layer.modules.length > 0;
+        html += '<div class="stack-row" data-tools="' + (hasTools ? 1 : 0) + '">';
+        html += '<div class="stack-num">' + layer.num + '</div>';
+        html += '<div class="stack-content">';
+        html += '<div class="stack-label">' + t(layer.labelKey);
+        if (hasTools) html += ' <span class="stack-count">(' + layer.modules.length + ')</span>';
+        html += '</div>';
+        html += '<div class="stack-modules">';
+        if (!hasTools) {
+          html += '<span class="no-tools">' + t('stack.above') + '</span>';
+        } else {
+          for (var j = 0; j < layer.modules.length; j++) {
+            var mod = layer.modules[j];
+            html += '<a href="' + mod.url + '" target="_blank" class="module-chip cat-' + mod.cat + '">';
+            html += '<span class="icon">' + (CAT_ICONS[mod.cat] || '') + '</span>';
+            html += mod.name + ' →</a>';
+          }
         }
+        html += '</div></div></div>';
+      }
+      // Full stack overview row
+      html += '<div class="stack-row" data-tools="1" style="border-top:2px solid var(--brand)">';
+      html += '<div class="stack-num" style="background:var(--brand-light);color:var(--brand)">★</div>';
+      html += '<div class="stack-content">';
+      html += '<div class="stack-label" style="color:var(--brand)">' + t('stack.fullstack') + '</div>';
+      html += '<div class="stack-modules"><a href="https://cedricwangrs.github.io/autosar-lab/" target="_blank" class="module-chip cat-sys"><span class="icon">🎓</span>AUTOSAR Lab →</a></div>';
+      html += '</div></div>';
+      document.getElementById('stackDiagram').innerHTML = html;
+    }
 
-        function applyTheme(theme) {
-            const root = document.documentElement;
-            
-            if (theme === 'system') {
-                root.removeAttribute('data-theme');
-            } else {
-                root.setAttribute('data-theme', theme);
-            }
-            
-            localStorage.setItem('theme', theme);
-            updateButtonIcon(theme);
-        }
+    function renderStats() {
+      var stats = [
+        {value:'12',labelKey:'stats.tools'},
+        {value:'11',labelKey:'stats.modules'},
+        {value:'0',labelKey:'stats.deps'},
+        {value:'100%',labelKey:'stats.open'},
+      ];
+      var html = '';
+      for (var i = 0; i < stats.length; i++) {
+        html += '<div class="stat-card"><div class="stat-value">' + stats[i].value + '</div><div class="stat-label">' + t(stats[i].labelKey) + '</div></div>';
+      }
+      document.getElementById('statsRow').innerHTML = html;
+    }
 
-        function toggleTheme() {
-            const current = getTheme();
-            let next;
-            
-            if (current === 'system') next = 'light';
-            else if (current === 'light') next = 'dark';
-            else next = 'system';
+    function renderAll() {
+      renderFilterChips();
+      renderTools();
+      renderStack();
+      renderStats();
+    }
 
-            applyTheme(next);
-        }
+    /* ====== Language ====== */
+    function setLang(lang) {
+      currentLang = lang;
+      document.documentElement.setAttribute('lang', lang === 'zh' ? 'zh-CN' : 'en');
+      document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        var text = I18N[lang][key];
+        if (text) el.innerHTML = text;
+      });
+      document.querySelectorAll('.lang-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+      });
+      try { localStorage.setItem('coverageMapLang', lang); } catch(e) {}
+      renderAll();
+    }
 
-        function updateButtonIcon(theme) {
-            const btn = document.getElementById('theme-toggle');
-            let icon;
-            
-            if (theme === 'light') {
-                icon = '☀️';
-            } else if (theme === 'dark') {
-                icon = '🌙';
-            } else {
-                // System: Show icon based on current system preference
-                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                icon = isDark ? '🌙' : '☀️';
-            }
-            
-            btn.textContent = icon;
-        }
+    /* ====== Filter / Search ====== */
+    function setFilter(cat) {
+      currentFilter = cat;
+      renderFilterChips();
+      renderTools();
+    }
+    function onSearch(val) {
+      currentSearch = val;
+      renderTools();
+    }
 
-        // Initialize
-        applyTheme(getTheme());
+    /* ====== Theme ====== */
+    function toggleTheme() {
+      var html = document.documentElement;
+      var current = html.getAttribute('data-theme') || 'dark';
+      var next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      try { localStorage.setItem('coverageMapTheme', next); } catch(e) {}
+      document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+    }
 
-        // Listen for system preference changes (optional but good for UX)
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-            if (getTheme() === 'system') {
-                updateButtonIcon('system');
-            }
-        });
-    </script>
+    /* ====== Scroll utilities ====== */
+    function scrollToTop() { window.scrollTo({top:0, behavior:'smooth'}); }
+
+    // Scroll progress + back-to-top + active nav
+    window.addEventListener('scroll', function() {
+      var st = window.scrollY;
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max > 0) {
+        document.getElementById('scrollProgress').style.width = (st / max * 100) + '%';
+      }
+      var backTop = document.getElementById('backTop');
+      if (st > 400) backTop.classList.add('visible');
+      else backTop.classList.remove('visible');
+      // Active nav
+      var sections = ['tools','stack','why','stats'];
+      var active = '';
+      for (var i = 0; i < sections.length; i++) {
+        var el = document.getElementById(sections[i]);
+        if (el && el.offsetTop - 60 <= st) active = sections[i];
+      }
+      document.querySelectorAll('.nav-links a').forEach(function(a) {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + active);
+      });
+    });
+
+    /* ====== Init ====== */
+    (function init() {
+      // Theme
+      var theme = 'dark';
+      try { theme = localStorage.getItem('coverageMapTheme') || 'dark'; } catch(e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+
+      // Language: detect from browser or localStorage
+      var lang = 'en';
+      try { lang = localStorage.getItem('coverageMapLang') || ''; } catch(e) {}
+      if (!lang) {
+        var browserLang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
+        lang = browserLang.indexOf('zh') >= 0 ? 'zh' : 'en';
+      }
+      setLang(lang);
+    })();
+  </script>
 <script charset="UTF-8" id="LA_COLLECT" src="//sdk.51.la/js-sdk-pro.min.js"></script>
 <script>LA.init({id:"3OM1qRIIsTB5cxKR",ck:"3OM1qRIIsTB5cxKR",autoTrack:true})</script>
 </body>
